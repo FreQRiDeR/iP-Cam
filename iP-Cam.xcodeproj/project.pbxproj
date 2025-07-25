@@ -1,0 +1,612 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC0D3F8E2E31164D0043D08F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8C2E31164C0043D08F /* LICENSE */; };
+		DC0D3F8F2E31164D0043D08F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8D2E31164C0043D08F /* README.md */; };
+		DC0D3F902E31164D0043D08F /* iP-Cam .png in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8B2E31164C0043D08F /* iP-Cam .png */; };
+		DC0D3F912E31164D0043D08F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8C2E31164C0043D08F /* LICENSE */; };
+		DC0D3F922E31164D0043D08F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8D2E31164C0043D08F /* README.md */; };
+		DC0D3F932E31164D0043D08F /* iP-Cam .png in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8B2E31164C0043D08F /* iP-Cam .png */; };
+		DC0D3F942E31164D0043D08F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8C2E31164C0043D08F /* LICENSE */; };
+		DC0D3F952E31164D0043D08F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8D2E31164C0043D08F /* README.md */; };
+		DC0D3F962E31164D0043D08F /* iP-Cam .png in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8B2E31164C0043D08F /* iP-Cam .png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DC0D3F6F2E3115CB0043D08F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC0D3F542E3115C30043D08F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC0D3F5B2E3115C30043D08F;
+			remoteInfo = "iP-Cam";
+		};
+		DC0D3F792E3115CC0043D08F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC0D3F542E3115C30043D08F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC0D3F5B2E3115C30043D08F;
+			remoteInfo = "iP-Cam";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		DC0D3F5C2E3115C30043D08F /* iP-Cam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iP-Cam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC0D3F6E2E3115CB0043D08F /* iP-CamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "iP-CamTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC0D3F782E3115CC0043D08F /* iP-CamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "iP-CamUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC0D3F8B2E31164C0043D08F /* iP-Cam .png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iP-Cam .png"; sourceTree = "<group>"; };
+		DC0D3F8C2E31164C0043D08F /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		DC0D3F8D2E31164C0043D08F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		DC0D3F5E2E3115C30043D08F /* iP-Cam */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "iP-Cam";
+			sourceTree = "<group>";
+		};
+		DC0D3F712E3115CB0043D08F /* iP-CamTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "iP-CamTests";
+			sourceTree = "<group>";
+		};
+		DC0D3F7B2E3115CC0043D08F /* iP-CamUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "iP-CamUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DC0D3F592E3115C30043D08F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0D3F6B2E3115CB0043D08F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0D3F752E3115CC0043D08F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC0D3F532E3115C30043D08F = {
+			isa = PBXGroup;
+			children = (
+				DC0D3F8B2E31164C0043D08F /* iP-Cam .png */,
+				DC0D3F8D2E31164C0043D08F /* README.md */,
+				DC0D3F8C2E31164C0043D08F /* LICENSE */,
+				DC0D3F5E2E3115C30043D08F /* iP-Cam */,
+				DC0D3F712E3115CB0043D08F /* iP-CamTests */,
+				DC0D3F7B2E3115CC0043D08F /* iP-CamUITests */,
+				DC0D3F5D2E3115C30043D08F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DC0D3F5D2E3115C30043D08F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC0D3F5C2E3115C30043D08F /* iP-Cam.app */,
+				DC0D3F6E2E3115CB0043D08F /* iP-CamTests.xctest */,
+				DC0D3F782E3115CC0043D08F /* iP-CamUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DC0D3F5B2E3115C30043D08F /* iP-Cam */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0D3F822E3115CC0043D08F /* Build configuration list for PBXNativeTarget "iP-Cam" */;
+			buildPhases = (
+				DC0D3F582E3115C30043D08F /* Sources */,
+				DC0D3F592E3115C30043D08F /* Frameworks */,
+				DC0D3F5A2E3115C30043D08F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DC0D3F5E2E3115C30043D08F /* iP-Cam */,
+			);
+			name = "iP-Cam";
+			packageProductDependencies = (
+			);
+			productName = "iP-Cam";
+			productReference = DC0D3F5C2E3115C30043D08F /* iP-Cam.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DC0D3F6D2E3115CB0043D08F /* iP-CamTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0D3F852E3115CC0043D08F /* Build configuration list for PBXNativeTarget "iP-CamTests" */;
+			buildPhases = (
+				DC0D3F6A2E3115CB0043D08F /* Sources */,
+				DC0D3F6B2E3115CB0043D08F /* Frameworks */,
+				DC0D3F6C2E3115CB0043D08F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC0D3F702E3115CB0043D08F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DC0D3F712E3115CB0043D08F /* iP-CamTests */,
+			);
+			name = "iP-CamTests";
+			packageProductDependencies = (
+			);
+			productName = "iP-CamTests";
+			productReference = DC0D3F6E2E3115CB0043D08F /* iP-CamTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DC0D3F772E3115CC0043D08F /* iP-CamUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0D3F882E3115CC0043D08F /* Build configuration list for PBXNativeTarget "iP-CamUITests" */;
+			buildPhases = (
+				DC0D3F742E3115CC0043D08F /* Sources */,
+				DC0D3F752E3115CC0043D08F /* Frameworks */,
+				DC0D3F762E3115CC0043D08F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC0D3F7A2E3115CC0043D08F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DC0D3F7B2E3115CC0043D08F /* iP-CamUITests */,
+			);
+			name = "iP-CamUITests";
+			packageProductDependencies = (
+			);
+			productName = "iP-CamUITests";
+			productReference = DC0D3F782E3115CC0043D08F /* iP-CamUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC0D3F542E3115C30043D08F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					DC0D3F5B2E3115C30043D08F = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					DC0D3F6D2E3115CB0043D08F = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = DC0D3F5B2E3115C30043D08F;
+					};
+					DC0D3F772E3115CC0043D08F = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = DC0D3F5B2E3115C30043D08F;
+					};
+				};
+			};
+			buildConfigurationList = DC0D3F572E3115C30043D08F /* Build configuration list for PBXProject "iP-Cam" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DC0D3F532E3115C30043D08F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DC0D3F5D2E3115C30043D08F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DC0D3F5B2E3115C30043D08F /* iP-Cam */,
+				DC0D3F6D2E3115CB0043D08F /* iP-CamTests */,
+				DC0D3F772E3115CC0043D08F /* iP-CamUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC0D3F5A2E3115C30043D08F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC0D3F942E31164D0043D08F /* LICENSE in Resources */,
+				DC0D3F952E31164D0043D08F /* README.md in Resources */,
+				DC0D3F962E31164D0043D08F /* iP-Cam .png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0D3F6C2E3115CB0043D08F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC0D3F8E2E31164D0043D08F /* LICENSE in Resources */,
+				DC0D3F8F2E31164D0043D08F /* README.md in Resources */,
+				DC0D3F902E31164D0043D08F /* iP-Cam .png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0D3F762E3115CC0043D08F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC0D3F912E31164D0043D08F /* LICENSE in Resources */,
+				DC0D3F922E31164D0043D08F /* README.md in Resources */,
+				DC0D3F932E31164D0043D08F /* iP-Cam .png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DC0D3F582E3115C30043D08F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0D3F6A2E3115CB0043D08F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC0D3F742E3115CC0043D08F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DC0D3F702E3115CB0043D08F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC0D3F5B2E3115C30043D08F /* iP-Cam */;
+			targetProxy = DC0D3F6F2E3115CB0043D08F /* PBXContainerItemProxy */;
+		};
+		DC0D3F7A2E3115CC0043D08F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC0D3F5B2E3115C30043D08F /* iP-Cam */;
+			targetProxy = DC0D3F792E3115CC0043D08F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		DC0D3F802E3115CC0043D08F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DC0D3F812E3115CC0043D08F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DC0D3F832E3115CC0043D08F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "iP-Cam";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
+				INFOPLIST_KEY_NSCameraUsageDescription = "iP-Cam needs camera access to broadcast video feed over your local network.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "iP-Cam needs local network access to broadcast video stream to devices on your network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "iP-Cam needs microphone access to broadcast audio along with video feed.";
+				INFOPLIST_KEY_UIBackgroundModes = "audio background-processing";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.iP-Cam";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DC0D3F842E3115CC0043D08F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "iP-Cam";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
+				INFOPLIST_KEY_NSCameraUsageDescription = "iP-Cam needs camera access to broadcast video feed over your local network.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "iP-Cam needs local network access to broadcast video stream to devices on your network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "iP-Cam needs microphone access to broadcast audio along with video feed.";
+				INFOPLIST_KEY_UIBackgroundModes = "audio background-processing";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.iP-Cam";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DC0D3F862E3115CC0043D08F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.iP-CamTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iP-Cam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iP-Cam";
+			};
+			name = Debug;
+		};
+		DC0D3F872E3115CC0043D08F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.iP-CamTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iP-Cam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iP-Cam";
+			};
+			name = Release;
+		};
+		DC0D3F892E3115CC0043D08F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.iP-CamUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "iP-Cam";
+			};
+			name = Debug;
+		};
+		DC0D3F8A2E3115CC0043D08F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7WQU2QFCC6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.iP-CamUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "iP-Cam";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC0D3F572E3115C30043D08F /* Build configuration list for PBXProject "iP-Cam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0D3F802E3115CC0043D08F /* Debug */,
+				DC0D3F812E3115CC0043D08F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC0D3F822E3115CC0043D08F /* Build configuration list for PBXNativeTarget "iP-Cam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0D3F832E3115CC0043D08F /* Debug */,
+				DC0D3F842E3115CC0043D08F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC0D3F852E3115CC0043D08F /* Build configuration list for PBXNativeTarget "iP-CamTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0D3F862E3115CC0043D08F /* Debug */,
+				DC0D3F872E3115CC0043D08F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC0D3F882E3115CC0043D08F /* Build configuration list for PBXNativeTarget "iP-CamUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0D3F892E3115CC0043D08F /* Debug */,
+				DC0D3F8A2E3115CC0043D08F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DC0D3F542E3115C30043D08F /* Project object */;
+}
