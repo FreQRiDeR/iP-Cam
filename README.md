@@ -71,9 +71,8 @@ The app consists of several key components:
 
 ### Requirements
 - Xcode 15.0+
-- iOS 17.0+
+- iOS 15.4+
 - Swift 5.9+
-- HLS.framework
 
 ### Building
 1. Open `iP-Cam.xcodeproj` in Xcode
