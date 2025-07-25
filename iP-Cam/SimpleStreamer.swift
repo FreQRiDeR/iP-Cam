@@ -7,6 +7,10 @@ class SimpleStreamer: ObservableObject {
     private let boundary = "myboundary"
     
     func stopStreaming() {
+        // Remove notification observer first
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("NewSampleBuffer"), object: nil)
+        
+        // Close all connections properly
         for connection in connections {
             connection.cancel()
         }

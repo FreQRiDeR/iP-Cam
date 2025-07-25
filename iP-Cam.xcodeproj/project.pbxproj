@@ -9,13 +9,10 @@
 /* Begin PBXBuildFile section */
 		DC0D3F8E2E31164D0043D08F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8C2E31164C0043D08F /* LICENSE */; };
 		DC0D3F8F2E31164D0043D08F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8D2E31164C0043D08F /* README.md */; };
-		DC0D3F902E31164D0043D08F /* iP-Cam .png in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8B2E31164C0043D08F /* iP-Cam .png */; };
 		DC0D3F912E31164D0043D08F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8C2E31164C0043D08F /* LICENSE */; };
 		DC0D3F922E31164D0043D08F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8D2E31164C0043D08F /* README.md */; };
-		DC0D3F932E31164D0043D08F /* iP-Cam .png in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8B2E31164C0043D08F /* iP-Cam .png */; };
 		DC0D3F942E31164D0043D08F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8C2E31164C0043D08F /* LICENSE */; };
 		DC0D3F952E31164D0043D08F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8D2E31164C0043D08F /* README.md */; };
-		DC0D3F962E31164D0043D08F /* iP-Cam .png in Resources */ = {isa = PBXBuildFile; fileRef = DC0D3F8B2E31164C0043D08F /* iP-Cam .png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,7 +36,6 @@
 		DC0D3F5C2E3115C30043D08F /* iP-Cam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iP-Cam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC0D3F6E2E3115CB0043D08F /* iP-CamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "iP-CamTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC0D3F782E3115CC0043D08F /* iP-CamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "iP-CamUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC0D3F8B2E31164C0043D08F /* iP-Cam .png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iP-Cam .png"; sourceTree = "<group>"; };
 		DC0D3F8C2E31164C0043D08F /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		DC0D3F8D2E31164C0043D08F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -90,7 +86,6 @@
 		DC0D3F532E3115C30043D08F = {
 			isa = PBXGroup;
 			children = (
-				DC0D3F8B2E31164C0043D08F /* iP-Cam .png */,
 				DC0D3F8D2E31164C0043D08F /* README.md */,
 				DC0D3F8C2E31164C0043D08F /* LICENSE */,
 				DC0D3F5E2E3115C30043D08F /* iP-Cam */,
@@ -232,7 +227,6 @@
 			files = (
 				DC0D3F942E31164D0043D08F /* LICENSE in Resources */,
 				DC0D3F952E31164D0043D08F /* README.md in Resources */,
-				DC0D3F962E31164D0043D08F /* iP-Cam .png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +236,6 @@
 			files = (
 				DC0D3F8E2E31164D0043D08F /* LICENSE in Resources */,
 				DC0D3F8F2E31164D0043D08F /* README.md in Resources */,
-				DC0D3F902E31164D0043D08F /* iP-Cam .png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,7 +245,6 @@
 			files = (
 				DC0D3F912E31164D0043D08F /* LICENSE in Resources */,
 				DC0D3F922E31164D0043D08F /* README.md in Resources */,
-				DC0D3F932E31164D0043D08F /* iP-Cam .png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,9 +424,9 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "iP-Cam needs camera access to broadcast video feed over your local network.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "iP-Cam needs local network access to broadcast video stream to devices on your network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "iP-Cam needs microphone access to broadcast audio along with video feed.";
-				INFOPLIST_KEY_UIBackgroundModes = "audio background-processing";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "audio background-processing";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -471,9 +463,9 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "iP-Cam needs camera access to broadcast video feed over your local network.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "iP-Cam needs local network access to broadcast video stream to devices on your network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "iP-Cam needs microphone access to broadcast audio along with video feed.";
-				INFOPLIST_KEY_UIBackgroundModes = "audio background-processing";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "audio background-processing";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

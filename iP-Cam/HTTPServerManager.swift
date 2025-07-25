@@ -66,20 +66,24 @@ class HTTPServerManager: ObservableObject {
     }
     
     func stopServer() {
-        // Close all active connections first
+        print("🛑 Stopping HTTP Server...")
+        
+        // Force close all connections immediately
         for connection in activeConnections {
             connection.cancel()
         }
         activeConnections.removeAll()
         
-        // Stop the streamer
+        // Stop the streamer first
         streamer.stopStreaming()
         
+        // Cancel listener
         listener?.cancel()
         listener = nil
         browser?.cancel()
         browser = nil
-        print("HTTP Server stopped")
+        
+        print("✅ HTTP Server stopped completely")
     }
     
     private func handleNewConnection(_ connection: NWConnection) {
@@ -179,15 +183,21 @@ class HTTPServerManager: ObservableObject {
                         position: absolute;
                         bottom: 10px;
                         right: 10px;
-                        background: rgba(0, 0, 0, 0.7);
+                        background: rgba(0, 0, 0, 0.8);
                         color: white;
                         border: none;
-                        padding: 8px 10px;
-                        border-radius: 4px;
+                        padding: 10px;
+                        border-radius: 6px;
                         cursor: pointer;
-                        font-size: 14px;
+                        font-size: 16px;
                         z-index: 10;
-                        font-family: monospace;
+                        font-family: system-ui;
+                        font-weight: bold;
+                        width: 36px;
+                        height: 36px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                     }
                     .fullscreen-btn:hover {
                         background: rgba(0, 0, 0, 0.9);
@@ -203,8 +213,12 @@ class HTTPServerManager: ObservableObject {
             <body>
                 <h1>iP-Cam</h1>
                 <div class="video-container">
-                    <img id="stream" src="/stream" onclick="toggleFullscreen()">
-                    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">⛶</button>
+                    <img id="stream" src="/stream">
+                    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <script>
@@ -215,12 +229,12 @@ class HTTPServerManager: ObservableObject {
                         if (img.classList.contains('fullscreen')) {
                             img.classList.remove('fullscreen');
                             btn.classList.remove('in-fullscreen');
-                            btn.innerHTML = '⛶';
+                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>';
                             document.exitFullscreen?.();
                         } else {
                             img.classList.add('fullscreen');
                             btn.classList.add('in-fullscreen');
-                            btn.innerHTML = '⛷';
+                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/></svg>';
                             img.requestFullscreen?.();
                         }
                     }

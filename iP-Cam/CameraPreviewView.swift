@@ -4,38 +4,76 @@ import AVFoundation
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
     
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
-        
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.frame = view.layer.bounds
-        previewLayer.videoGravity = .resizeAspectFill
-        
-        // Set initial orientation
-        updateOrientation(previewLayer)
-        
-        view.layer.addSublayer(previewLayer)
-        
-        // Listen for orientation changes
-        NotificationCenter.default.addObserver(
-            forName: UIDevice.orientationDidChangeNotification,
-            object: nil,
-            queue: .main
-        ) { _ in
-            updateOrientation(previewLayer)
-        }
-        
+    func makeUIView(context: Context) -> PreviewView {
+        let view = PreviewView()
+        view.session = session
         return view
     }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        if let previewLayer = uiView.layer.sublayers?.first as? AVCaptureVideoPreviewLayer {
-            previewLayer.frame = uiView.bounds
-            updateOrientation(previewLayer)
+
+    func updateUIView(_ uiView: PreviewView, context: Context) {
+        uiView.updatePreviewLayer()
+    }
+}
+
+class PreviewView: UIView {
+    var session: AVCaptureSession? {
+        didSet {
+            previewLayer.session = session
         }
     }
     
-    private func updateOrientation(_ previewLayer: AVCaptureVideoPreviewLayer) {
+    override class var layerClass: AnyClass {
+        return AVCaptureVideoPreviewLayer.self
+    }
+    
+    var previewLayer: AVCaptureVideoPreviewLayer {
+        return layer as! AVCaptureVideoPreviewLayer
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        setupPreviewLayer()
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupPreviewLayer()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupPreviewLayer()
+    }
+    
+    private func setupPreviewLayer() {
+        backgroundColor = .black
+        previewLayer.videoGravity = .resizeAspectFill
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(orientationChanged),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updatePreviewLayer()
+    }
+    
+    func updatePreviewLayer() {
+        previewLayer.frame = bounds
+        updateOrientation()
+    }
+    
+    @objc private func orientationChanged() {
+        DispatchQueue.main.async {
+            self.updatePreviewLayer()
+        }
+    }
+    
+    private func updateOrientation() {
         guard let connection = previewLayer.connection else { return }
         
         let deviceOrientation = UIDevice.current.orientation
@@ -47,9 +85,9 @@ struct CameraPreviewView: UIViewRepresentable {
         case .portraitUpsideDown:
             videoOrientation = .portraitUpsideDown
         case .landscapeLeft:
-            videoOrientation = .landscapeRight  // Fixed mapping
+            videoOrientation = .landscapeRight
         case .landscapeRight:
-            videoOrientation = .landscapeLeft   // Fixed mapping
+            videoOrientation = .landscapeLeft
         default:
             videoOrientation = .portrait
         }
@@ -57,5 +95,9 @@ struct CameraPreviewView: UIViewRepresentable {
         if connection.isVideoOrientationSupported {
             connection.videoOrientation = videoOrientation
         }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

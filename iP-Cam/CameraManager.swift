@@ -44,8 +44,8 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
             try audioSession.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP, .mixWithOthers, .allowAirPlay])
             try audioSession.setActive(true)
             
-            // Enable background audio to keep app alive
-            try audioSession.setCategory(.playback, options: [.mixWithOthers])
+            // Keep audio session active for background operation
+            try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try audioSession.setActive(true)
         } catch {
             print("Failed to setup audio session: \(error)")
@@ -102,9 +102,18 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     @objc private func appDidEnterBackground() {
         // Request extended background time for camera capture
         backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "CameraCapture") {
-            print("⚠️ Background task expired")
+            print("⚠️ Background task expired - attempting to restart")
+            // Try to restart background task
             UIApplication.shared.endBackgroundTask(self.backgroundTaskID)
-            self.backgroundTaskID = .invalid
+            self.backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "CameraCapture") {
+                UIApplication.shared.endBackgroundTask(self.backgroundTaskID)
+                self.backgroundTaskID = .invalid
+            }
+        }
+        
+        // Keep capture session running
+        if !captureSession.isRunning {
+            captureSession.startRunning()
         }
     }
     
