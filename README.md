@@ -48,7 +48,7 @@ The app consists of several key components:
 - **Video Toggle**: Enable/disable video broadcasting
 - **Audio Toggle**: Enable/disable audio broadcasting
 - **Broadcast Toggle**: Start/stop the broadcast server
-- **Settings**: Configure protocol, port, and quality settings
+- **Settings**: Configure quality settings
 
 ## Technical Details
 
@@ -58,14 +58,12 @@ The app consists of several key components:
 ### Permissions Required
 - Camera access for video capture
 - Microphone access for audio capture
-- Local network access for broadcasting
 
 ### Browser Compatibility
 - Chrome (recommended)
 - Firefox
 - Safari
 - Edge
-- Any browser with WebRTC support
 
 ## Development
 
@@ -81,7 +79,7 @@ The app consists of several key components:
 
 ## Security Considerations
 
-- The app only broadcasts on your local network
+- The app only broadcasts on your local network (for now...)
 - Consider firewall settings for production use
 
 ## Troubleshooting
