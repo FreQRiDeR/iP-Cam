@@ -1,7 +1,7 @@
 # iP-Cam - iOS Network Camera Broadcasting App
 
 <div align="center">
-      ![alt text](https://github.com/FreQRiDeR/iP-Cam/blob/main/iP-Cam%20.png)             
+      <img src="iP-Cam/Assets.xcassets/AppIcon.png" width="300" />             
       <h1>iP-Cam APP</h1>
 </div>
 A Swift-based iOS application that turns your iPhone into a network camera, broadcasting audio and video over your local network with browser-based viewing capabilities.
