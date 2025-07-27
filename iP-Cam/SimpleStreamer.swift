@@ -24,7 +24,9 @@ class SimpleStreamer: ObservableObject {
         let initialHeader = """
         HTTP/1.1 200 OK\r
         Content-Type: multipart/x-mixed-replace; boundary=\(boundary)\r
-        Cache-Control: no-cache\r
+        Cache-Control: no-cache, no-store, must-revalidate\r
+        Pragma: no-cache\r
+        Expires: 0\r
         Connection: close\r
         \r
         
@@ -55,12 +57,15 @@ class SimpleStreamer: ObservableObject {
         guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
         
         let image = UIImage(cgImage: cgImage)
-        guard let jpegData = image.jpegData(compressionQuality: 0.5) else { return }
+        guard let jpegData = image.jpegData(compressionQuality: 0.6) else { return }
         
         let frameHeader = """
         --\(boundary)\r
         Content-Type: image/jpeg\r
         Content-Length: \(jpegData.count)\r
+        Cache-Control: no-cache, no-store, must-revalidate\r
+        Pragma: no-cache\r
+        Expires: 0\r
         \r
         
         """.data(using: .utf8)!

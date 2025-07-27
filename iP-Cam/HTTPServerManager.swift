@@ -4,36 +4,56 @@ import Network
 class HTTPServerManager: ObservableObject {
     private var listener: NWListener?
     private var browser: NWBrowser?
-    private var streamer = SimpleStreamer()
     private var activeConnections: [NWConnection] = []
-    
-    deinit {
-        stopServer()
-    }
+    private let streamer = SimpleStreamer()
     
     var localIPAddress: String {
-        let ip = getLocalIPAddress() ?? "localhost"
-        print("🌐 Local IP Address: \(ip)")
-        return ip
+        var address = "localhost"
+        
+        // Get list of all interfaces on the local machine:
+        var ifaddr : UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddr) == 0 else { return address }
+        guard let firstAddr = ifaddr else { return address }
+        
+        // For each interface ...
+        for ifptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
+            let interface = ifptr.pointee
+            
+            // Check for IPv4 or IPv6 interface:
+            let addrFamily = interface.ifa_addr.pointee.sa_family
+            if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
+                
+                // Check interface name:
+                let name = String(cString: interface.ifa_name)
+                if name == "en0" || name == "en1" || name == "pdp_ip0" || name == "pdp_ip1" {
+                    
+                    // Convert interface address to a human readable string:
+                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                    getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
+                               &hostname, socklen_t(hostname.count),
+                               nil, socklen_t(0), NI_NUMERICHOST)
+                    address = String(cString: hostname)
+                }
+            }
+        }
+        freeifaddrs(ifaddr)
+        
+        print("🌐 Local IP Address: \(address)")
+        return address
     }
     
     func startServer() {
-        stopServer() // Ensure clean start
-        
-        // Trigger local network permission prompt FIRST
-        triggerLocalNetworkPermission()
-        
-        // Add a small delay to let permission prompt appear
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            self.startActualServer()
-        }
+        print("🚀 HTTPServerManager.startServer() called")
+        startActualServer()
     }
 
     private func startActualServer() {
+        print("🔧 Creating server parameters...")
         let parameters = NWParameters.tcp
         parameters.allowLocalEndpointReuse = true
         
         do {
+            print("🔧 Creating listener on port 8080...")
             listener = try NWListener(using: parameters, on: 8080)
             
             listener?.stateUpdateHandler = { [weak self] state in
@@ -70,7 +90,7 @@ class HTTPServerManager: ObservableObject {
         
         // Force close all connections immediately
         for connection in activeConnections {
-            connection.cancel()
+            connection.forceCancel()
         }
         activeConnections.removeAll()
         
@@ -83,7 +103,10 @@ class HTTPServerManager: ObservableObject {
         browser?.cancel()
         browser = nil
         
-        print("✅ HTTP Server stopped completely")
+        // Small delay before allowing restart
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            print("✅ HTTP Server stopped completely")
+        }
     }
     
     private func handleNewConnection(_ connection: NWConnection) {
@@ -125,174 +148,83 @@ class HTTPServerManager: ObservableObject {
     private func handleHTTPRequest(data: Data, connection: NWConnection) {
         guard let request = String(data: data, encoding: .utf8) else { return }
         
-        if request.contains("GET / ") {
-            let html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>iP-Cam</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=0.5, maximum-scale=3.0">
-                <style>
-                    body {
-                        margin: 0;
-                        padding: 20px;
-                        background: #555;
-                        color: white;
-                        font-family: Arial, sans-serif;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: 100vh;
-                        zoom: 1;
-                    }
-                    h1 {
-                        margin-bottom: 20px;
-                        color: white;
-                    }
-                    .video-container {
-                        position: relative;
-                        width: 90%;
-                        max-width: 90vw;
-                        max-height: 80vh;
-                        display: inline-block;
-                    }
-                    #stream {
-                        width: 100%;
-                        height: auto;
-                        max-height: 80vh;
-                        border: 2px solid #333;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        transform: rotate(0deg);
-                        object-fit: contain;
-                    }
-                    #stream.fullscreen {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100vw;
-                        height: 100vh;
-                        object-fit: contain;
-                        z-index: 9999;
-                        border: none;
-                        border-radius: 0;
-                        transform: none;
-                    }
-                    .fullscreen-btn {
-                        position: absolute;
-                        bottom: 10px;
-                        right: 10px;
-                        background: rgba(0, 0, 0, 0.8);
-                        color: white;
-                        border: none;
-                        padding: 10px;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        font-size: 16px;
-                        z-index: 10;
-                        font-family: system-ui;
-                        font-weight: bold;
-                        width: 36px;
-                        height: 36px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    .fullscreen-btn:hover {
-                        background: rgba(0, 0, 0, 0.9);
-                    }
-                    .fullscreen-btn.in-fullscreen {
-                        position: fixed;
-                        bottom: 20px;
-                        right: 20px;
-                        z-index: 10000;
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>iP-Cam</h1>
-                <div class="video-container">
-                    <img id="stream" src="/stream">
-                    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <script>
-                    function toggleFullscreen() {
-                        const img = document.getElementById('stream');
-                        const btn = document.getElementById('fullscreenBtn');
-                        
-                        if (img.classList.contains('fullscreen')) {
-                            img.classList.remove('fullscreen');
-                            btn.classList.remove('in-fullscreen');
-                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>';
-                            document.exitFullscreen?.();
-                        } else {
-                            img.classList.add('fullscreen');
-                            btn.classList.add('in-fullscreen');
-                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/></svg>';
-                            img.requestFullscreen?.();
-                        }
-                    }
+        handleRequest(request, connection: connection)
+    }
 
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape') {
-                            const img = document.getElementById('stream');
-                            const btn = document.getElementById('fullscreenBtn');
-                            img.classList.remove('fullscreen');
-                            btn.classList.remove('in-fullscreen');
-                            btn.innerHTML = '⛶';
-                        }
-                    });
-                </script>
-            </body>
-            </html>
-            """
-            let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: \(html.count)\r\n\r\n\(html)"
-            connection.send(content: response.data(using: .utf8)!, completion: .contentProcessed { _ in
-                connection.cancel()
-            })
+    private func handleRequest(_ request: String, connection: NWConnection) {
+        print("📥 Request: \(request.prefix(100))")
+        
+        if request.contains("GET / ") {
+            serveMainPage(connection)
         } else if request.contains("GET /stream") {
-            streamer.addConnection(connection)
+            handleMJPEGStream(connection)
+        } else if request.contains("POST /settings/resolution") {
+            handleResolutionChange(request, connection: connection)
+        } else if request.contains("POST /settings/video") {
+            handleVideoToggle(connection)
+        } else if request.contains("POST /settings/audio") {
+            handleAudioToggle(connection)
+        } else if request.contains("POST /settings/recording") {
+            handleRecordingToggle(connection)
         } else {
-            let response = "HTTP/1.1 404 Not Found\r\n\r\n"
-            connection.send(content: response.data(using: .utf8)!, completion: .contentProcessed { _ in
-                connection.cancel()
-            })
+            send404(connection)
         }
     }
-    
-    private func getLocalIPAddress() -> String? {
-        var address: String?
-        var ifaddr: UnsafeMutablePointer<ifaddrs>?
-        
-        if getifaddrs(&ifaddr) == 0 {
-            var ptr = ifaddr
-            while ptr != nil {
-                defer { ptr = ptr?.pointee.ifa_next }
-                
-                let interface = ptr?.pointee
-                let addrFamily = interface?.ifa_addr.pointee.sa_family
-                
-                if addrFamily == UInt8(AF_INET) {
-                    let name = String(cString: (interface?.ifa_name)!)
-                    if name == "en0" || name == "en1" {
-                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                        getnameinfo(interface?.ifa_addr, socklen_t((interface?.ifa_addr.pointee.sa_len)!),
-                                   &hostname, socklen_t(hostname.count),
-                                   nil, socklen_t(0), NI_NUMERICHOST)
-                        address = String(cString: hostname)
-                    }
-                }
-            }
-            freeifaddrs(ifaddr)
+
+    private func handleMJPEGStream(_ connection: NWConnection) {
+        print("📺 Starting MJPEG stream for connection")
+        streamer.addConnection(connection)
+    }
+
+    private func handleHLSRequest(_ request: String, connection: NWConnection) {
+        let components = request.components(separatedBy: " ")
+        guard components.count >= 2 else {
+            send404(connection)
+            return
         }
         
-        return address
+        let path = components[1]
+        let fileName = String(path.dropFirst(5)) // Remove "/hls/"
+        
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let filePath = documentsPath.appendingPathComponent("hls/\(fileName)")
+        
+        guard FileManager.default.fileExists(atPath: filePath.path) else {
+            send404(connection)
+            return
+        }
+        
+        do {
+            let fileData = try Data(contentsOf: filePath)
+            let contentType = fileName.hasSuffix(".m3u8") ? "application/x-mpegURL" : 
+                             fileName.hasSuffix(".ts") ? "video/mp2t" : "video/mp4"
+            
+            let response = """
+            HTTP/1.1 200 OK\r
+            Content-Type: \(contentType)\r
+            Content-Length: \(fileData.count)\r
+            Access-Control-Allow-Origin: *\r
+            Cache-Control: no-cache\r
+            \r
+            
+            """.data(using: .utf8)!
+            
+            connection.send(content: response, completion: .contentProcessed { _ in
+                connection.send(content: fileData, completion: .contentProcessed { _ in
+                    connection.cancel()
+                })
+            })
+            
+        } catch {
+            send404(connection)
+        }
+    }
+
+    private func send404(_ connection: NWConnection) {
+        let response = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
+        connection.send(content: response.data(using: .utf8)!, completion: .contentProcessed { _ in
+            connection.cancel()
+        })
     }
     
     private func triggerLocalNetworkPermission() {
@@ -325,5 +257,411 @@ class HTTPServerManager: ObservableObject {
             self.browser?.cancel()
             self.browser = nil
         }
+    }
+
+    private func handleResolutionChange(_ request: String, connection: NWConnection) {
+        if let body = extractRequestBody(request),
+           let data = body.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+           let resolution = json["resolution"] {
+            
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("ChangeResolution"), 
+                    object: resolution
+                )
+            }
+        }
+        sendJSONResponse(["status": "ok"], connection: connection)
+    }
+
+    private func handleVideoToggle(_ connection: NWConnection) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("ToggleVideo"), object: nil)
+        }
+        sendJSONResponse(["status": "ok"], connection: connection)
+    }
+
+    private func handleAudioToggle(_ connection: NWConnection) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("ToggleAudio"), object: nil)
+        }
+        sendJSONResponse(["status": "ok"], connection: connection)
+    }
+
+    private func handleRecordingToggle(_ connection: NWConnection) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("ToggleRecording"), object: nil)
+        }
+        sendJSONResponse(["status": "ok"], connection: connection)
+    }
+
+    private func handleStatusRequest(_ connection: NWConnection) {
+        // Return current app status as JSON
+        let status: [String: Any] = [
+            "videoEnabled": true, // Get from CameraManager
+            "audioEnabled": true, // Get from CameraManager  
+            "resolution": "HD (720p)" // Get from CameraManager
+        ]
+        sendJSONResponse(status, connection: connection)
+    }
+
+    private func sendJSONResponse(_ data: [String: Any], connection: NWConnection) {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: data)
+            let response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: \(jsonData.count)\r\n\r\n"
+            var responseData = response.data(using: .utf8)!
+            responseData.append(jsonData)
+            
+            connection.send(content: responseData, completion: .contentProcessed { _ in
+                connection.cancel()
+            })
+        } catch {
+            send404(connection)
+        }
+    }
+
+    private func serveMainPage(_ connection: NWConnection) {
+        let html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>iP-Cam</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: #222;
+                    color: white;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
+                h1 { margin: 10px 0; color: white; font-size: 1.5em; }
+                .video-container {
+                    position: relative;
+                    width: 90vw;
+                    height: 70vh;
+                    background: black;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 8px;
+                    overflow: hidden;
+                }
+                #video {
+                    max-width: 100%;
+                    max-height: 100%;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    display: block;
+                }
+                
+                /* Disable image caching */
+                img {
+                    image-rendering: -webkit-optimize-contrast;
+                }
+                
+                /* Disable image caching */
+                img {
+                    image-rendering: -webkit-optimize-contrast;
+                }
+                .settings {
+                    display: flex;
+                    gap: 15px;
+                    margin: 15px 0;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                }
+                .controls {
+                    display: flex;
+                    gap: 15px;
+                    margin: 15px 0;
+                    align-items: center;
+                }
+                .control-btn, select {
+                    background: #444;
+                    border: none;
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+                .control-btn:hover, select:hover { background: #666; }
+                .control-btn:active { background: #888; }
+                .control-btn.active { background: #0a84ff; }
+                .control-btn.inactive { background: #666; opacity: 0.6; }
+                .control-btn.recording { background: #ff0000; }
+                .status {
+                    color: #0f0;
+                    font-weight: bold;
+                }
+                .fullscreen-container {
+                    position: relative;
+                }
+                .fullscreen-container:-webkit-full-screen {
+                    background: black;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100vw;
+                    height: 100vh;
+                }
+                .fullscreen-container:-webkit-full-screen .video-container {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    max-width: none !important;
+                    max-height: none !important;
+                    border-radius: 0 !important;
+                }
+                .fullscreen-container:-webkit-full-screen #video,
+                .fullscreen-container:-moz-full-screen #video,
+                .fullscreen-container:fullscreen #video {
+                    max-width: 100vw !important;
+                    max-height: 100vh !important;
+                    width: auto !important;
+                    height: auto !important;
+                    object-fit: contain !important;
+                }
+                .fullscreen-container:-moz-full-screen {
+                    background: black;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100vw;
+                    height: 100vh;
+                }
+                .fullscreen-container:-moz-full-screen .video-container {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    max-width: none !important;
+                    max-height: none !important;
+                    border-radius: 0 !important;
+                }
+                .fullscreen-container:-moz-full-screen #video {
+                    width: 100% !important;
+                    height: 100% !important;
+                    object-fit: contain !important;
+                }
+                .fullscreen-container:fullscreen {
+                    background: black;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100vw;
+                    height: 100vh;
+                }
+                .fullscreen-container:fullscreen .video-container {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    max-width: none !important;
+                    max-height: none !important;
+                    border-radius: 0 !important;
+                }
+                .fullscreen-container:fullscreen #video {
+                    width: 100% !important;
+                    height: 100% !important;
+                    object-fit: contain !important;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>iP-Cam Live Stream</h1>
+            <div class="fullscreen-container" id="fullscreen-container">
+                <div class="video-container">
+                    <img id="video" src="/stream" alt="Live Stream">
+                </div>
+            </div>
+            
+            <div class="settings">
+                <select id="resolution" onchange="changeResolution()">
+                    <option value="Low (480p)">480p</option>
+                    <option value="Medium (720p)">720p</option>
+                    <option value="HD (720p)" selected>HD 720p</option>
+                    <option value="Full HD (1080p)">1080p</option>
+                    <option value="4K (2160p)">4K</option>
+                </select>
+                <button class="control-btn active" onclick="toggleVideo()" id="videoBtn">Video ON</button>
+                <button class="control-btn active" onclick="toggleAudio()" id="audioBtn">Audio ON</button>
+                <button class="control-btn inactive" onclick="toggleRecording()" id="recordBtn">Record OFF</button>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" onclick="refreshStream()">Refresh</button>
+                <button class="control-btn" onclick="toggleFullscreen()">Fullscreen</button>
+                <span class="status" id="status">LIVE</span>
+            </div>
+            
+            <script>
+                let videoEnabled = true;
+                let audioEnabled = true;
+                let recordingEnabled = false;
+                let reconnectInterval;
+                let isReconnecting = false;
+                let reconnectAttempts = 0;
+                
+                const video = document.getElementById('video');
+                const status = document.getElementById('status');
+                const videoBtn = document.getElementById('videoBtn');
+                const audioBtn = document.getElementById('audioBtn');
+                const recordBtn = document.getElementById('recordBtn');
+                
+                function startReconnecting() {
+                    if (isReconnecting) return;
+                    isReconnecting = true;
+                    reconnectAttempts = 0;
+                    
+                    status.textContent = 'RECONNECTING...';
+                    status.style.color = '#ff0';
+                    
+                    reconnectInterval = setInterval(() => {
+                        reconnectAttempts++;
+                        console.log('Reconnect attempt:', reconnectAttempts);
+                        video.src = '/stream?bust=' + Date.now() + Math.random();
+                    }, 1000);
+                }
+                
+                function stopReconnecting() {
+                    if (reconnectInterval) {
+                        clearInterval(reconnectInterval);
+                        reconnectInterval = null;
+                    }
+                    isReconnecting = false;
+                    reconnectAttempts = 0;
+                    status.textContent = 'LIVE';
+                    status.style.color = '#0f0';
+                }
+                
+                function changeResolution() {
+                    const resolution = document.getElementById('resolution').value;
+                    fetch('/settings/resolution', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({resolution: resolution})
+                    }).then(() => {
+                        setTimeout(() => refreshStream(), 500);
+                    });
+                }
+                
+                function toggleVideo() {
+                    fetch('/settings/video', {method: 'POST'})
+                    .then(() => {
+                        videoEnabled = !videoEnabled;
+                        videoBtn.textContent = videoEnabled ? 'Video ON' : 'Video OFF';
+                        videoBtn.className = videoEnabled ? 'control-btn active' : 'control-btn inactive';
+                        if (!videoEnabled) {
+                            video.style.display = 'none';
+                        } else {
+                            video.style.display = 'block';
+                            refreshStream();
+                        }
+                    });
+                }
+                
+                function toggleAudio() {
+                    fetch('/settings/audio', {method: 'POST'})
+                    .then(() => {
+                        audioEnabled = !audioEnabled;
+                        audioBtn.textContent = audioEnabled ? 'Audio ON' : 'Audio OFF';
+                        audioBtn.className = audioEnabled ? 'control-btn active' : 'control-btn inactive';
+                    });
+                }
+                
+                function toggleRecording() {
+                    fetch('/settings/recording', {method: 'POST'})
+                    .then(() => {
+                        recordingEnabled = !recordingEnabled;
+                        recordBtn.textContent = recordingEnabled ? 'Record ON' : 'Record OFF';
+                        recordBtn.className = recordingEnabled ? 'control-btn recording' : 'control-btn inactive';
+                    });
+                }
+                
+                function refreshStream() {
+                    stopReconnecting();
+                    // Force cache bypass
+                    video.src = '';
+                    setTimeout(() => {
+                        video.src = '/stream?t=' + Date.now();
+                    }, 10);
+                }
+                
+                function toggleFullscreen() {
+                    const container = document.getElementById('fullscreen-container');
+                    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement) {
+                        if (container.requestFullscreen) {
+                            container.requestFullscreen();
+                        } else if (container.webkitRequestFullscreen) {
+                            container.webkitRequestFullscreen();
+                        } else if (container.mozRequestFullScreen) {
+                            container.mozRequestFullScreen();
+                        } else if (container.msRequestFullscreen) {
+                            container.msRequestFullscreen();
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        }
+                    }
+                }
+                
+                video.onerror = function(e) {
+                    console.log('Video error:', e);
+                    startReconnecting();
+                };
+                
+                video.onload = function() {
+                    console.log('Video loaded successfully');
+                    stopReconnecting();
+                };
+                
+                video.addEventListener('load', function() {
+                    console.log('Video load event');
+                    stopReconnecting();
+                });
+                
+                // Force initial load
+                window.addEventListener('load', function() {
+                    refreshStream();
+                });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'f' || e.key === 'F') {
+                        toggleFullscreen();
+                    } else if (e.key === 'r' || e.key === 'R') {
+                        refreshStream();
+                    } else if (e.key === 'v' || e.key === 'V') {
+                        toggleVideo();
+                    } else if (e.key === 'a' || e.key === 'A') {
+                        toggleAudio();
+                    }
+                });
+            </script>
+        </body>
+        </html>
+        """
+        
+        let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: \(html.count)\r\n\r\n\(html)"
+        connection.send(content: response.data(using: .utf8)!, completion: .contentProcessed { _ in
+            connection.cancel()
+        })
+    }
+
+    private func extractRequestBody(_ request: String) -> String? {
+        let components = request.components(separatedBy: "\r\n\r\n")
+        return components.count > 1 ? components[1] : nil
     }
 }

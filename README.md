@@ -53,7 +53,7 @@ The app consists of several key components:
 ## Technical Details
 
 ### Network Ports
-- **Port 8080**: HTTP server for web interface
+- **Port 8080**: HTTP server for web interface and MJPEG stream
 
 ### Permissions Required
 - Camera access for video capture

@@ -36,6 +36,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         setupAudioSession()
         setupCaptureSession()
         setupBackgroundHandling()
+        setupRemoteControlListeners()
     }
     
     private func setupAudioSession() {
@@ -138,6 +139,14 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
               let videoInput = try? AVCaptureDeviceInput(device: videoDevice) else { return }
         
+        // Configure for low latency
+        try? videoDevice.lockForConfiguration()
+        videoDevice.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 30) // 30 FPS max
+        if videoDevice.isLowLightBoostSupported {
+            videoDevice.automaticallyEnablesLowLightBoostWhenAvailable = false
+        }
+        videoDevice.unlockForConfiguration()
+        
         if captureSession.canAddInput(videoInput) {
             captureSession.addInput(videoInput)
         }
@@ -152,6 +161,10 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         
         // Setup video output
         videoOutput = AVCaptureVideoDataOutput()
+        videoOutput?.videoSettings = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ]
+        videoOutput?.alwaysDiscardsLateVideoFrames = true
         videoOutput?.setSampleBufferDelegate(self, queue: videoQueue)
         
         if let videoOutput = videoOutput, captureSession.canAddOutput(videoOutput) {
@@ -192,7 +205,9 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
             return
         }
         
+        // Send to both old and new notification names for compatibility
         NotificationCenter.default.post(name: NSNotification.Name("NewSampleBuffer"), object: sampleBuffer)
+        NotificationCenter.default.post(name: NSNotification.Name("NewVideoSampleBuffer"), object: sampleBuffer)
     }
 
     @objc private func orientationChanged() {
@@ -220,5 +235,50 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         }
         
         connection.videoOrientation = videoOrientation
+    }
+
+    private func setupRemoteControlListeners() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemoteResolutionChange),
+            name: NSNotification.Name("ChangeResolution"),
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemoteVideoToggle),
+            name: NSNotification.Name("ToggleVideo"),
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemoteAudioToggle),
+            name: NSNotification.Name("ToggleAudio"),
+            object: nil
+        )
+    }
+
+    @objc private func handleRemoteResolutionChange(_ notification: Notification) {
+        if let resolutionString = notification.object as? String,
+           let resolution = VideoResolution.allCases.first(where: { $0.rawValue == resolutionString }) {
+            DispatchQueue.main.async {
+                self.selectedResolution = resolution
+                self.updateResolution(resolution)
+            }
+        }
+    }
+
+    @objc private func handleRemoteVideoToggle(_ notification: Notification) {
+        DispatchQueue.main.async {
+            self.isVideoEnabled.toggle()
+        }
+    }
+
+    @objc private func handleRemoteAudioToggle(_ notification: Notification) {
+        DispatchQueue.main.async {
+            self.isAudioEnabled.toggle()
+        }
     }
 }

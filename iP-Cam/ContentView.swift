@@ -93,6 +93,20 @@ struct ContentView: View {
                             .onChange(of: cameraManager.selectedResolution) { resolution in
                                 cameraManager.updateResolution(resolution)
                             }
+                            
+                            Text("Recording")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            
+                            Toggle("Save stream to device", isOn: $broadcastManager.isRecording)
+                                .foregroundColor(.white)
+                                .onChange(of: broadcastManager.isRecording) { recording in
+                                    if recording {
+                                        broadcastManager.startRecording()
+                                    } else {
+                                        broadcastManager.stopRecording()
+                                    }
+                                }
                         }
                         
                         Button("Done") {
