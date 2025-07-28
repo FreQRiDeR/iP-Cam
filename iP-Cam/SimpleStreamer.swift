@@ -5,11 +5,15 @@ import Network
 class SimpleStreamer: ObservableObject {
     private var connections: [NWConnection] = []
     private let boundary = "myboundary"
+    private var isObservingFrames = false
     
     func stopStreaming() {
         // Remove notification observer first
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("NewSampleBuffer"), object: nil)
-        
+        if isObservingFrames {
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name("NewSampleBuffer"), object: nil)
+            isObservingFrames = false
+        }
+
         // Close all connections properly
         for connection in connections {
             connection.cancel()
@@ -20,29 +24,52 @@ class SimpleStreamer: ObservableObject {
     
     func addConnection(_ connection: NWConnection) {
         connections.append(connection)
-        
+
         let initialHeader = """
         HTTP/1.1 200 OK\r
         Content-Type: multipart/x-mixed-replace; boundary=\(boundary)\r
         Cache-Control: no-cache, no-store, must-revalidate\r
         Pragma: no-cache\r
         Expires: 0\r
-        Connection: close\r
+        Connection: keep-alive\r
+        Access-Control-Allow-Origin: *\r
         \r
-        
+
         """.data(using: .utf8)!
-        
-        connection.send(content: initialHeader, completion: .contentProcessed { _ in })
-        
-        // Start listening for frame notifications
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleFrame(_:)),
-            name: NSNotification.Name("NewSampleBuffer"),
-            object: nil
-        )
-        
-        print("📺 Added streaming connection")
+
+        connection.send(content: initialHeader, completion: .contentProcessed { error in
+            if let error = error {
+                print("❌ Failed to send initial header: \(error)")
+            } else {
+                print("✅ Initial header sent successfully")
+            }
+        })
+
+        // Always restart frame observation when adding connections
+        if !isObservingFrames {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleFrame(_:)),
+                name: NSNotification.Name("NewSampleBuffer"),
+                object: nil
+            )
+            isObservingFrames = true
+            print("🔄 Restarted frame observation")
+        }
+
+        print("📺 Added streaming connection (total: \(connections.count))")
+    }
+
+    func removeConnection(_ connection: NWConnection) {
+        connections.removeAll { $0 === connection }
+        print("📺 Removed streaming connection (total: \(connections.count))")
+
+        // If no more connections, stop observing frames
+        if connections.isEmpty && isObservingFrames {
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name("NewSampleBuffer"), object: nil)
+            isObservingFrames = false
+            print("🛑 Stopped observing frames - no active connections")
+        }
     }
     
     @objc private func handleFrame(_ notification: Notification) {
@@ -77,9 +104,19 @@ class SimpleStreamer: ObservableObject {
         
         connections.removeAll { connection in
             if connection.state == .cancelled {
+                print("🗑️ Removing dead connection (state: \(connection.state))")
                 return true
             }
-            connection.send(content: frameData, completion: .contentProcessed { _ in })
+            if case .failed(_) = connection.state {
+                print("🗑️ Removing dead connection (state: \(connection.state))")
+                return true
+            }
+            
+            connection.send(content: frameData, completion: .contentProcessed { error in
+                if let error = error {
+                    print("❌ Failed to send frame: \(error)")
+                }
+            })
             return false
         }
     }

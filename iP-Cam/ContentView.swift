@@ -100,13 +100,34 @@ struct ContentView: View {
                             
                             Toggle("Save stream to device", isOn: $broadcastManager.isRecording)
                                 .foregroundColor(.white)
+                                .disabled(!broadcastManager.isBroadcasting)
+                                .opacity(broadcastManager.isBroadcasting ? 1.0 : 0.5)
                                 .onChange(of: broadcastManager.isRecording) { recording in
+                                    // Only allow recording if broadcasting is active
+                                    guard broadcastManager.isBroadcasting else {
+                                        // Reset toggle if broadcast is not active
+                                        DispatchQueue.main.async {
+                                            broadcastManager.isRecording = false
+                                        }
+                                        return
+                                    }
+
                                     if recording {
                                         broadcastManager.startRecording()
                                     } else {
                                         broadcastManager.stopRecording()
+                                        // List files for debugging
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                            broadcastManager.listRecordedFiles()
+                                        }
                                     }
                                 }
+
+                            if !broadcastManager.isBroadcasting {
+                                Text("Start broadcast to enable recording")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
                         }
                         
                         Button("Done") {

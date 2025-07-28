@@ -5,7 +5,9 @@ class HTTPServerManager: ObservableObject {
     private var listener: NWListener?
     private var browser: NWBrowser?
     private var activeConnections: [NWConnection] = []
+    private var streamingConnections: [NWConnection] = []
     private let streamer = SimpleStreamer()
+    private var isServerRunning = false
     
     var localIPAddress: String {
         var address = "localhost"
@@ -44,7 +46,19 @@ class HTTPServerManager: ObservableObject {
     
     func startServer() {
         print("🚀 HTTPServerManager.startServer() called")
-        startActualServer()
+        
+        // If server is already running, stop it first
+        if isServerRunning {
+            stopServer()
+            // Wait for complete shutdown before restarting
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                self.startActualServer()
+            }
+        } else {
+            // Reset streamer state for fresh start
+            streamer.stopStreaming()
+            startActualServer()
+        }
     }
 
     private func startActualServer() {
@@ -62,10 +76,13 @@ class HTTPServerManager: ObservableObject {
                     case .ready:
                         print("✅ Server READY on port 8080")
                         print("🌐 Access at: http://\(self?.localIPAddress ?? "unknown"):8080")
+                        self?.isServerRunning = true
                     case .failed(let error):
                         print("❌ Server FAILED: \(error)")
+                        self?.isServerRunning = false
                     case .cancelled:
                         print("🛑 Server CANCELLED")
+                        self?.isServerRunning = false
                     default:
                         print("📡 Server state: \(state)")
                     }
@@ -82,31 +99,31 @@ class HTTPServerManager: ObservableObject {
             
         } catch {
             print("❌ Failed to create listener: \(error)")
+            isServerRunning = false
         }
     }
     
     func stopServer() {
         print("🛑 Stopping HTTP Server...")
-        
+        isServerRunning = false
+
+        // Stop the streamer first
+        streamer.stopStreaming()
+
         // Force close all connections immediately
         for connection in activeConnections {
             connection.forceCancel()
         }
         activeConnections.removeAll()
-        
-        // Stop the streamer first
-        streamer.stopStreaming()
-        
+        streamingConnections.removeAll()
+
         // Cancel listener
         listener?.cancel()
         listener = nil
         browser?.cancel()
         browser = nil
-        
-        // Small delay before allowing restart
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            print("✅ HTTP Server stopped completely")
-        }
+
+        print("✅ HTTP Server stopped completely")
     }
     
     private func handleNewConnection(_ connection: NWConnection) {
@@ -116,8 +133,12 @@ class HTTPServerManager: ObservableObject {
             print("📡 Connection state: \(state)")
             if case .cancelled = state {
                 self?.activeConnections.removeAll { $0 === connection }
+                self?.streamingConnections.removeAll { $0 === connection }
+                self?.streamer.removeConnection(connection)
             } else if case .failed(_) = state {
                 self?.activeConnections.removeAll { $0 === connection }
+                self?.streamingConnections.removeAll { $0 === connection }
+                self?.streamer.removeConnection(connection)
             }
         }
         
@@ -127,9 +148,13 @@ class HTTPServerManager: ObservableObject {
             if let error = error {
                 print("❌ Receive error: \(error)")
                 self?.activeConnections.removeAll { $0 === connection }
+                if self?.streamingConnections.contains(where: { $0 === connection }) == true {
+                    self?.streamingConnections.removeAll { $0 === connection }
+                    self?.streamer.removeConnection(connection)
+                }
                 return
             }
-            
+
             if let data = data, !data.isEmpty {
                 print("📥 Received request: \(data.count) bytes")
                 if let request = String(data: data, encoding: .utf8) {
@@ -137,8 +162,9 @@ class HTTPServerManager: ObservableObject {
                 }
                 self?.handleHTTPRequest(data: data, connection: connection)
             }
-            
-            if isComplete {
+
+            // Only close connection if it's complete AND not a streaming connection
+            if isComplete && !(self?.streamingConnections.contains { $0 === connection } ?? false) {
                 connection.cancel()
                 self?.activeConnections.removeAll { $0 === connection }
             }
@@ -153,11 +179,15 @@ class HTTPServerManager: ObservableObject {
 
     private func handleRequest(_ request: String, connection: NWConnection) {
         print("📥 Request: \(request.prefix(100))")
-        
+
         if request.contains("GET / ") {
             serveMainPage(connection)
         } else if request.contains("GET /stream") {
             handleMJPEGStream(connection)
+        } else if request.contains("GET /health") {
+            handleHealthCheck(connection)
+        } else if request.contains("GET /status") {
+            handleStatusRequest(connection)
         } else if request.contains("POST /settings/resolution") {
             handleResolutionChange(request, connection: connection)
         } else if request.contains("POST /settings/video") {
@@ -173,7 +203,19 @@ class HTTPServerManager: ObservableObject {
 
     private func handleMJPEGStream(_ connection: NWConnection) {
         print("📺 Starting MJPEG stream for connection")
+        // Mark this connection as a streaming connection
+        streamingConnections.append(connection)
         streamer.addConnection(connection)
+    }
+
+    private func handleHealthCheck(_ connection: NWConnection) {
+        let healthData: [String: Any] = [
+            "status": "ok",
+            "activeConnections": activeConnections.count,
+            "streamingConnections": streamingConnections.count,
+            "timestamp": Date().timeIntervalSince1970
+        ]
+        sendJSONResponse(healthData, connection: connection)
     }
 
     private func handleHLSRequest(_ request: String, connection: NWConnection) {
@@ -300,7 +342,7 @@ class HTTPServerManager: ObservableObject {
         // Return current app status as JSON
         let status: [String: Any] = [
             "videoEnabled": true, // Get from CameraManager
-            "audioEnabled": true, // Get from CameraManager  
+            "audioEnabled": true, // Get from CameraManager
             "resolution": "HD (720p)" // Get from CameraManager
         ]
         sendJSONResponse(status, connection: connection)
@@ -405,6 +447,10 @@ class HTTPServerManager: ObservableObject {
                 }
                 .fullscreen-container {
                     position: relative;
+                    cursor: pointer;
+                }
+                .fullscreen-container:hover {
+                    opacity: 0.95;
                 }
                 .fullscreen-container:-webkit-full-screen {
                     background: black;
@@ -474,7 +520,7 @@ class HTTPServerManager: ObservableObject {
         </head>
         <body>
             <h1>iP-Cam Live Stream</h1>
-            <div class="fullscreen-container" id="fullscreen-container">
+            <div class="fullscreen-container" id="fullscreen-container" ondblclick="toggleFullscreen()" title="Double-click for fullscreen">
                 <div class="video-container">
                     <img id="video" src="/stream" alt="Live Stream">
                 </div>
@@ -488,14 +534,14 @@ class HTTPServerManager: ObservableObject {
                     <option value="Full HD (1080p)">1080p</option>
                     <option value="4K (2160p)">4K</option>
                 </select>
-                <button class="control-btn active" onclick="toggleVideo()" id="videoBtn">Video ON</button>
+                <button class="control-btn active" onclick="toggleVideo()" id="videoBtn">Video</button>
                 <button class="control-btn active" onclick="toggleAudio()" id="audioBtn">Audio ON</button>
                 <button class="control-btn inactive" onclick="toggleRecording()" id="recordBtn">Record OFF</button>
             </div>
             
             <div class="controls">
                 <button class="control-btn" onclick="refreshStream()">Refresh</button>
-                <button class="control-btn" onclick="toggleFullscreen()">Fullscreen</button>
+                <button class="control-btn" onclick="toggleFullscreen()" id="fullscreenBtn">Fullscreen</button>
                 <span class="status" id="status">LIVE</span>
             </div>
             
@@ -503,6 +549,7 @@ class HTTPServerManager: ObservableObject {
                 let videoEnabled = true;
                 let audioEnabled = true;
                 let recordingEnabled = false;
+                let videoPaused = false;
                 let reconnectInterval;
                 let isReconnecting = false;
                 let reconnectAttempts = 0;
@@ -514,18 +561,40 @@ class HTTPServerManager: ObservableObject {
                 const recordBtn = document.getElementById('recordBtn');
                 
                 function startReconnecting() {
-                    if (isReconnecting) return;
+                    if (isReconnecting || videoPaused) return;
                     isReconnecting = true;
                     reconnectAttempts = 0;
-                    
+
                     status.textContent = 'RECONNECTING...';
                     status.style.color = '#ff0';
-                    
+
                     reconnectInterval = setInterval(() => {
+                        // Don't reconnect if video is paused
+                        if (videoPaused) {
+                            stopReconnecting();
+                            status.textContent = 'PAUSED';
+                            status.style.color = '#ff0';
+                            return;
+                        }
+
                         reconnectAttempts++;
                         console.log('Reconnect attempt:', reconnectAttempts);
-                        video.src = '/stream?bust=' + Date.now() + Math.random();
-                    }, 1000);
+
+                        // Clear the src first to force a new connection
+                        video.src = '';
+
+                        // Add a small delay before setting new src
+                        setTimeout(() => {
+                            video.src = '/stream?t=' + Date.now() + '&attempt=' + reconnectAttempts;
+                        }, 100);
+
+                        // Stop trying after 10 attempts
+                        if (reconnectAttempts >= 10) {
+                            stopReconnecting();
+                            status.textContent = 'CONNECTION FAILED';
+                            status.style.color = '#f00';
+                        }
+                    }, 2000);
                 }
                 
                 function stopReconnecting() {
@@ -554,14 +623,8 @@ class HTTPServerManager: ObservableObject {
                     fetch('/settings/video', {method: 'POST'})
                     .then(() => {
                         videoEnabled = !videoEnabled;
-                        videoBtn.textContent = videoEnabled ? 'Video ON' : 'Video OFF';
+                        videoBtn.textContent = videoEnabled ? 'Video' : 'Video OFF';
                         videoBtn.className = videoEnabled ? 'control-btn active' : 'control-btn inactive';
-                        if (!videoEnabled) {
-                            video.style.display = 'none';
-                        } else {
-                            video.style.display = 'block';
-                            refreshStream();
-                        }
                     });
                 }
                 
@@ -585,28 +648,67 @@ class HTTPServerManager: ObservableObject {
                 
                 function refreshStream() {
                     stopReconnecting();
+
+                    // Don't refresh if video is paused
+                    if (videoPaused) {
+                        console.log('Video is paused, not refreshing stream');
+                        return;
+                    }
+
                     // Force cache bypass
                     video.src = '';
                     setTimeout(() => {
-                        video.src = '/stream?t=' + Date.now();
-                    }, 10);
+                        video.src = '/stream?t=' + Date.now() + '&refresh=1';
+                    }, 100);
                 }
                 
                 function toggleFullscreen() {
+                    console.log('Fullscreen toggle requested');
                     const container = document.getElementById('fullscreen-container');
-                    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement) {
+
+                    if (!container) {
+                        console.error('Fullscreen container not found');
+                        return;
+                    }
+
+                    // Check if already in fullscreen
+                    const isFullscreen = !!(document.fullscreenElement ||
+                                           document.webkitFullscreenElement ||
+                                           document.mozFullScreenElement ||
+                                           document.msFullscreenElement);
+
+                    console.log('Currently in fullscreen:', isFullscreen);
+
+                    if (!isFullscreen) {
+                        // Enter fullscreen
+                        let promise;
                         if (container.requestFullscreen) {
-                            container.requestFullscreen();
+                            promise = container.requestFullscreen();
                         } else if (container.webkitRequestFullscreen) {
-                            container.webkitRequestFullscreen();
+                            promise = container.webkitRequestFullscreen();
                         } else if (container.mozRequestFullScreen) {
-                            container.mozRequestFullScreen();
+                            promise = container.mozRequestFullScreen();
                         } else if (container.msRequestFullscreen) {
-                            container.msRequestFullscreen();
+                            promise = container.msRequestFullscreen();
+                        } else {
+                            console.error('Fullscreen API not supported');
+                            alert('Fullscreen is not supported in this browser');
+                            return;
+                        }
+
+                        // Handle promise if returned
+                        if (promise && promise.catch) {
+                            promise.catch(err => {
+                                console.error('Failed to enter fullscreen:', err);
+                                alert('Failed to enter fullscreen: ' + err.message);
+                            });
                         }
                     } else {
+                        // Exit fullscreen
                         if (document.exitFullscreen) {
-                            document.exitFullscreen();
+                            document.exitFullscreen().catch(err => {
+                                console.error('Failed to exit fullscreen:', err);
+                            });
                         } else if (document.webkitExitFullscreen) {
                             document.webkitExitFullscreen();
                         } else if (document.mozCancelFullScreen) {
@@ -619,22 +721,102 @@ class HTTPServerManager: ObservableObject {
                 
                 video.onerror = function(e) {
                     console.log('Video error:', e);
-                    startReconnecting();
+                    if (!isReconnecting) {
+                        startReconnecting();
+                    }
                 };
-                
+
                 video.onload = function() {
                     console.log('Video loaded successfully');
                     stopReconnecting();
                 };
-                
+
                 video.addEventListener('load', function() {
                     console.log('Video load event');
                     stopReconnecting();
                 });
+
+                // Add additional event listeners for better connection monitoring
+                video.addEventListener('loadstart', function() {
+                    console.log('Video load started');
+                });
+
+                video.addEventListener('loadeddata', function() {
+                    console.log('Video data loaded');
+                    stopReconnecting();
+                });
+
+                video.addEventListener('abort', function() {
+                    console.log('Video load aborted');
+                    if (!isReconnecting) {
+                        startReconnecting();
+                    }
+                });
                 
+                // Check fullscreen support on load
+                function checkFullscreenSupport() {
+                    const container = document.getElementById('fullscreen-container');
+                    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+                    const isSupported = !!(container.requestFullscreen ||
+                                          container.webkitRequestFullscreen ||
+                                          container.mozRequestFullScreen ||
+                                          container.msRequestFullscreen);
+
+                    if (!isSupported) {
+                        fullscreenBtn.textContent = 'Fullscreen (Not Supported)';
+                        fullscreenBtn.disabled = true;
+                        fullscreenBtn.style.opacity = '0.5';
+                        console.warn('Fullscreen API not supported in this browser');
+                    } else {
+                        console.log('Fullscreen API supported');
+                    }
+
+                    return isSupported;
+                }
+
                 // Force initial load
                 window.addEventListener('load', function() {
                     refreshStream();
+                    checkFullscreenSupport();
+                });
+
+                // Fullscreen event listeners
+                document.addEventListener('fullscreenchange', function() {
+                    console.log('Fullscreen changed:', !!document.fullscreenElement);
+                });
+
+                document.addEventListener('webkitfullscreenchange', function() {
+                    console.log('Webkit fullscreen changed:', !!document.webkitFullscreenElement);
+                });
+
+                document.addEventListener('mozfullscreenchange', function() {
+                    console.log('Mozilla fullscreen changed:', !!document.mozFullScreenElement);
+                });
+
+                document.addEventListener('msfullscreenchange', function() {
+                    console.log('MS fullscreen changed:', !!document.msFullscreenElement);
+                });
+
+                // Fullscreen error listeners
+                document.addEventListener('fullscreenerror', function(e) {
+                    console.error('Fullscreen error:', e);
+                    alert('Fullscreen failed: ' + e.message);
+                });
+
+                document.addEventListener('webkitfullscreenerror', function(e) {
+                    console.error('Webkit fullscreen error:', e);
+                    alert('Fullscreen failed');
+                });
+
+                document.addEventListener('mozfullscreenerror', function(e) {
+                    console.error('Mozilla fullscreen error:', e);
+                    alert('Fullscreen failed');
+                });
+
+                document.addEventListener('msfullscreenerror', function(e) {
+                    console.error('MS fullscreen error:', e);
+                    alert('Fullscreen failed');
                 });
                 
                 // Keyboard shortcuts
