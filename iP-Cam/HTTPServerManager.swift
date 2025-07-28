@@ -8,6 +8,8 @@ class HTTPServerManager: ObservableObject {
     private var streamingConnections: [NWConnection] = []
     private let streamer = SimpleStreamer()
     private var isServerRunning = false
+    @Published var serverPassword = "ipcam123" // Make it @Published so UI can bind to it
+    @Published var isWANEnabled = false // Add WAN toggle
     
     var localIPAddress: String {
         var address = "localhost"
@@ -50,8 +52,8 @@ class HTTPServerManager: ObservableObject {
         // If server is already running, stop it first
         if isServerRunning {
             stopServer()
-            // Wait for complete shutdown before restarting
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            // Wait longer for complete shutdown before restarting
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
                 self.startActualServer()
             }
         } else {
@@ -65,6 +67,7 @@ class HTTPServerManager: ObservableObject {
         print("🔧 Creating server parameters...")
         let parameters = NWParameters.tcp
         parameters.allowLocalEndpointReuse = true
+        // Remove acceptLocalOnly line since WAN is removed
         
         do {
             print("🔧 Creating listener on port 8080...")
@@ -74,12 +77,18 @@ class HTTPServerManager: ObservableObject {
                 DispatchQueue.main.async {
                     switch state {
                     case .ready:
-                        print("✅ Server READY on port 8080")
-                        print("🌐 Access at: http://\(self?.localIPAddress ?? "unknown"):8080")
+                        print("✅ Server READY on port 8080 (LAN only)")
+                        print("🌐 Local access: http://\(self?.localIPAddress ?? "unknown"):8080")
                         self?.isServerRunning = true
                     case .failed(let error):
                         print("❌ Server FAILED: \(error)")
                         self?.isServerRunning = false
+                        // Try to restart with a different approach
+                        self?.listener?.cancel()
+                        self?.listener = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            self?.startActualServer()
+                        }
                     case .cancelled:
                         print("🛑 Server CANCELLED")
                         self?.isServerRunning = false
@@ -95,7 +104,8 @@ class HTTPServerManager: ObservableObject {
             }
             
             listener?.start(queue: .global(qos: .userInitiated))
-            print("🚀 Starting HTTP server on port 8080...")
+            let mode = isWANEnabled ? "WAN enabled" : "LAN only"
+            print("🚀 Starting HTTP server on port 8080 (\(mode))...")
             
         } catch {
             print("❌ Failed to create listener: \(error)")
@@ -117,12 +127,19 @@ class HTTPServerManager: ObservableObject {
         activeConnections.removeAll()
         streamingConnections.removeAll()
 
-        // Cancel listener
+        // Cancel listener properly and wait for it to fully close
+        listener?.stateUpdateHandler = nil
+        listener?.newConnectionHandler = nil
         listener?.cancel()
-        listener = nil
+        
+        // Wait for listener to be fully cancelled
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+            self.listener = nil
+        }
+        
         browser?.cancel()
         browser = nil
-
+        
         print("✅ HTTP Server stopped completely")
     }
     
@@ -409,10 +426,6 @@ class HTTPServerManager: ObservableObject {
                     image-rendering: -webkit-optimize-contrast;
                 }
                 
-                /* Disable image caching */
-                img {
-                    image-rendering: -webkit-optimize-contrast;
-                }
                 .settings {
                     display: flex;
                     gap: 15px;
@@ -569,7 +582,6 @@ class HTTPServerManager: ObservableObject {
                     status.style.color = '#ff0';
 
                     reconnectInterval = setInterval(() => {
-                        // Don't reconnect if video is paused
                         if (videoPaused) {
                             stopReconnecting();
                             status.textContent = 'PAUSED';
@@ -580,15 +592,11 @@ class HTTPServerManager: ObservableObject {
                         reconnectAttempts++;
                         console.log('Reconnect attempt:', reconnectAttempts);
 
-                        // Clear the src first to force a new connection
                         video.src = '';
-
-                        // Add a small delay before setting new src
                         setTimeout(() => {
                             video.src = '/stream?t=' + Date.now() + '&attempt=' + reconnectAttempts;
                         }, 100);
 
-                        // Stop trying after 10 attempts
                         if (reconnectAttempts >= 10) {
                             stopReconnecting();
                             status.textContent = 'CONNECTION FAILED';
@@ -648,14 +656,10 @@ class HTTPServerManager: ObservableObject {
                 
                 function refreshStream() {
                     stopReconnecting();
-
-                    // Don't refresh if video is paused
                     if (videoPaused) {
                         console.log('Video is paused, not refreshing stream');
                         return;
                     }
-
-                    // Force cache bypass
                     video.src = '';
                     setTimeout(() => {
                         video.src = '/stream?t=' + Date.now() + '&refresh=1';
@@ -671,7 +675,6 @@ class HTTPServerManager: ObservableObject {
                         return;
                     }
 
-                    // Check if already in fullscreen
                     const isFullscreen = !!(document.fullscreenElement ||
                                            document.webkitFullscreenElement ||
                                            document.mozFullScreenElement ||
@@ -680,7 +683,6 @@ class HTTPServerManager: ObservableObject {
                     console.log('Currently in fullscreen:', isFullscreen);
 
                     if (!isFullscreen) {
-                        // Enter fullscreen
                         let promise;
                         if (container.requestFullscreen) {
                             promise = container.requestFullscreen();
@@ -696,7 +698,6 @@ class HTTPServerManager: ObservableObject {
                             return;
                         }
 
-                        // Handle promise if returned
                         if (promise && promise.catch) {
                             promise.catch(err => {
                                 console.error('Failed to enter fullscreen:', err);
@@ -704,7 +705,6 @@ class HTTPServerManager: ObservableObject {
                             });
                         }
                     } else {
-                        // Exit fullscreen
                         if (document.exitFullscreen) {
                             document.exitFullscreen().catch(err => {
                                 console.error('Failed to exit fullscreen:', err);
@@ -718,7 +718,7 @@ class HTTPServerManager: ObservableObject {
                         }
                     }
                 }
-                
+
                 video.onerror = function(e) {
                     console.log('Video error:', e);
                     if (!isReconnecting) {
@@ -736,7 +736,6 @@ class HTTPServerManager: ObservableObject {
                     stopReconnecting();
                 });
 
-                // Add additional event listeners for better connection monitoring
                 video.addEventListener('loadstart', function() {
                     console.log('Video load started');
                 });
@@ -753,7 +752,6 @@ class HTTPServerManager: ObservableObject {
                     }
                 });
                 
-                // Check fullscreen support on load
                 function checkFullscreenSupport() {
                     const container = document.getElementById('fullscreen-container');
                     const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -775,13 +773,11 @@ class HTTPServerManager: ObservableObject {
                     return isSupported;
                 }
 
-                // Force initial load
                 window.addEventListener('load', function() {
                     refreshStream();
                     checkFullscreenSupport();
                 });
 
-                // Fullscreen event listeners
                 document.addEventListener('fullscreenchange', function() {
                     console.log('Fullscreen changed:', !!document.fullscreenElement);
                 });
@@ -798,7 +794,6 @@ class HTTPServerManager: ObservableObject {
                     console.log('MS fullscreen changed:', !!document.msFullscreenElement);
                 });
 
-                // Fullscreen error listeners
                 document.addEventListener('fullscreenerror', function(e) {
                     console.error('Fullscreen error:', e);
                     alert('Fullscreen failed: ' + e.message);
@@ -819,7 +814,6 @@ class HTTPServerManager: ObservableObject {
                     alert('Fullscreen failed');
                 });
                 
-                // Keyboard shortcuts
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'f' || e.key === 'F') {
                         toggleFullscreen();
@@ -840,6 +834,186 @@ class HTTPServerManager: ObservableObject {
         connection.send(content: response.data(using: .utf8)!, completion: .contentProcessed { _ in
             connection.cancel()
         })
+    }
+
+    private func serveLoginPage(_ connection: NWConnection) {
+        let html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>iP-Cam Login</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: #222;
+                    color: white;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
+                .login-container {
+                    background: #333;
+                    padding: 40px;
+                    border-radius: 10px;
+                    text-align: center;
+                    max-width: 300px;
+                    width: 90%;
+                }
+                h1 { margin-bottom: 30px; }
+                input {
+                    width: 100%;
+                    padding: 15px;
+                    margin: 10px 0;
+                    border: none;
+                    border-radius: 5px;
+                    background: #555;
+                    color: white;
+                    font-size: 16px;
+                    box-sizing: border-box;
+                }
+                button {
+                    width: 100%;
+                    padding: 15px;
+                    margin: 10px 0;
+                    border: none;
+                    border-radius: 5px;
+                    background: #007AFF;
+                    color: white;
+                    font-size: 16px;
+                    cursor: pointer;
+                }
+                button:hover { background: #0056CC; }
+                .error { color: #ff4444; margin-top: 10px; }
+            </style>
+        </head>
+        <body>
+            <div class="login-container">
+                <h1>iP-Cam</h1>
+                <input type="password" id="password" placeholder="Enter password" onkeypress="if(event.key==='Enter') login()">
+                <button onclick="login()">Login</button>
+                <div id="error" class="error"></div>
+            </div>
+            
+            <script>
+                function login() {
+                    const password = document.getElementById('password').value;
+                    const errorDiv = document.getElementById('error');
+                    
+                    fetch('/auth', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({password: password})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = '/';
+                        } else {
+                            errorDiv.textContent = 'Invalid password';
+                            document.getElementById('password').value = '';
+                        }
+                    })
+                    .catch(error => {
+                        errorDiv.textContent = 'Connection error';
+                    });
+                }
+            </script>
+        </body>
+        </html>
+        """
+        
+        let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: \(html.count)\r\n\r\n\(html)"
+        connection.send(content: response.data(using: .utf8)!, completion: .contentProcessed { _ in
+            connection.cancel()
+        })
+    }
+
+    private func handlePasswordChange(_ request: String, connection: NWConnection) {
+        if let body = extractRequestBody(request),
+           let data = body.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+           let currentPassword = json["currentPassword"],
+           let newPassword = json["newPassword"] {
+            
+            if currentPassword == serverPassword {
+                DispatchQueue.main.async {
+                    self.serverPassword = newPassword
+                }
+                
+                // Invalidate all existing sessions by sending a response that clears the cookie
+                let successResponse = ["status": "success", "message": "Password changed successfully"]
+                do {
+                    let jsonData = try JSONSerialization.data(withJSONObject: successResponse)
+                    let response = """
+                    HTTP/1.1 200 OK\r
+                    Content-Type: application/json\r
+                    Set-Cookie: session=; Path=/; HttpOnly; Max-Age=0\r
+                    Content-Length: \(jsonData.count)\r
+                    \r
+                    
+                    """
+                    var responseData = response.data(using: .utf8)!
+                    responseData.append(jsonData)
+                    
+                    connection.send(content: responseData, completion: .contentProcessed { _ in
+                        connection.cancel()
+                    })
+                } catch {
+                    send404(connection)
+                }
+            } else {
+                let errorResponse = ["status": "error", "message": "Current password is incorrect"]
+                sendJSONResponse(errorResponse, connection: connection)
+            }
+        } else {
+            send404(connection)
+        }
+    }
+
+    private func isAuthenticated(_ request: String) -> Bool {
+        // Check for valid session cookie
+        return request.contains("Cookie: session=authenticated")
+    }
+
+    private func handleAuthentication(_ request: String, connection: NWConnection) {
+        if let body = extractRequestBody(request),
+           let data = body.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+           let password = json["password"] {
+            
+            if password == serverPassword {
+                let successResponse = ["status": "success"]
+                do {
+                    let jsonData = try JSONSerialization.data(withJSONObject: successResponse)
+                    let response = """
+                    HTTP/1.1 200 OK\r
+                    Content-Type: application/json\r
+                    Set-Cookie: session=authenticated; Path=/; HttpOnly; SameSite=Lax\r
+                    Access-Control-Allow-Origin: *\r
+                    Content-Length: \(jsonData.count)\r
+                    \r
+                    
+                    """
+                    var responseData = response.data(using: .utf8)!
+                    responseData.append(jsonData)
+                    
+                    connection.send(content: responseData, completion: .contentProcessed { _ in
+                        connection.cancel()
+                    })
+                } catch {
+                    send404(connection)
+                }
+            } else {
+                let errorResponse = ["status": "error"]
+                sendJSONResponse(errorResponse, connection: connection)
+            }
+        } else {
+            send404(connection)
+        }
     }
 
     private func extractRequestBody(_ request: String) -> String? {
